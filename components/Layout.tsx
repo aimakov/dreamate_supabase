@@ -15,8 +15,10 @@ const Layout = (props: Props) => {
         supabase.auth.onAuthStateChange((event, session) => {
             console.log(event);
             console.log(session);
-            if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
-            if (event === "SIGNED_OUT") dispatch(logoutSuccess);
+            if (session) dispatch(loginSuccess(session.user));
+            else dispatch(logoutSuccess);
+            // if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
+            // if (event === "SIGNED_OUT") dispatch(logoutSuccess);
             // if (session?.user.id) {
             //     dispatch(loginSuccess(session.user));
             // } else dispatch(logoutSuccess);

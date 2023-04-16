@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { selectMessage, selectType, selectToggle } from "@/store/popupSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { selectMessage, selectType, selectToggle, actionClear } from "@/store/popupSlice";
 
 const Popup = () => {
     const [popup, setPopup] = useState(false);
@@ -8,6 +8,8 @@ const Popup = () => {
     const message = useSelector(selectMessage);
     const type = useSelector(selectType);
     const toggle = useSelector(selectToggle);
+
+    const dispatch = useDispatch();
 
     const [loop, setLoop] = useState<any>();
 
@@ -19,8 +21,12 @@ const Popup = () => {
 
     const showPopup = () => {
         setPopup(true);
-
-        setLoop(setTimeout(() => setPopup(false), 2000));
+        dispatch(actionClear);
+        setLoop(
+            setTimeout(() => {
+                setPopup(false);
+            }, 2000)
+        );
     };
 
     useEffect(() => {

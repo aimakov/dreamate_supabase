@@ -49,24 +49,24 @@ export default function Home() {
         try {
             console.log(Object.keys(user).length);
             if (!Object.keys(user).length) dispatch(actionError({ message: "Error" }));
-            else dispatch(actionSuccess({ message: "Success" }));
-            // if (!Object.keys(user).length) {
-            //     console.log("sdfsdf");
-            //     setNotification({ message: "Message", type: "ERROR" });
-            // } else setNotification({ type: "SUCCESS", message: "Room created." });
-            // const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
-            // if (roomCodes_error) throw roomCodes_error;
+            else {
+                const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
+                if (roomCodes_error) throw roomCodes_error;
 
-            // const uniqueRoomCode = generateRoomCode(roomCodes_data);
+                const uniqueRoomCode = generateRoomCode(roomCodes_data);
 
-            // console.log(uniqueRoomCode);
+                console.log(uniqueRoomCode);
 
-            // const { error } = await supabase.from("rooms").insert({ room_code: uniqueRoomCode });
-            // if (error) throw error;
+                const { error } = await supabase.from("rooms").insert({ room_code: uniqueRoomCode });
+                if (error) throw error;
 
-            // console.log("New room created: " + uniqueRoomCode);
+                console.log("New room created: " + uniqueRoomCode);
 
-            // router.push("rooms/" + uniqueRoomCode);
+                dispatch(actionSuccess({ message: "Success" }));
+                setTimeout(() => {
+                    router.push("rooms/" + uniqueRoomCode);
+                }, 3000);
+            }
         } catch (error) {
             console.log(error);
         }
