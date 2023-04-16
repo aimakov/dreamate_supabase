@@ -11,11 +11,11 @@ export const slice = createSlice({
         },
 
         loginError: (state, action) => {
-            state.user = {};
+            state.user = action.payload;
         },
 
         logoutSuccess: (state, action) => {
-            state.user = {};
+            state.user = action.payload;
         },
     },
 });

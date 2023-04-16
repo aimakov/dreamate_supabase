@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectMessage, selectType, selectToggle } from "@/store/popupSlice";
 
-const Popup = ({ notification }) => {
+const Popup = () => {
     const [popup, setPopup] = useState(false);
+
+    const message = useSelector(selectMessage);
+    const type = useSelector(selectType);
+    const toggle = useSelector(selectToggle);
+
+    const [loop, setLoop] = useState<any>();
 
     const colorCodes = {
         ERROR: "#fca5a5",
@@ -11,24 +19,29 @@ const Popup = ({ notification }) => {
 
     const showPopup = () => {
         setPopup(true);
-        setTimeout(() => setPopup(false), 2000);
+
+        setLoop(setTimeout(() => setPopup(false), 2000));
     };
 
     useEffect(() => {
-        if (notification) {
+        if (message) {
             showPopup();
         }
-    }, [notification]);
+
+        return () => {
+            clearTimeout(loop);
+        };
+    }, [toggle]);
 
     return (
         <div
             style={{
                 top: popup ? "80px" : "-140px",
-                backgroundColor: colorCodes[notification?.type],
+                backgroundColor: colorCodes[type],
             }}
             className={`px-6 py-6 rounded-md shadow-md inline-block absolute transition-all left-2/4 -translate-x-1/2 ease-in-out duration-300 z-50`}
         >
-            {notification?.message}
+            {message}
         </div>
     );
 };

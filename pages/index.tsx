@@ -6,10 +6,9 @@ import { generateRoomCode } from "@/functions/generateRoomCode";
 import axios from "axios";
 import { useRouter } from "next/router";
 
-import Popup from "@/components/Popup";
-
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser, loginSuccess, logoutSuccess, loginError } from "@/store/authSlice";
+import { actionError, actionSuccess } from "@/store/popupSlice";
 // interface Room {
 //     id: string,
 //     room_code: string,
@@ -21,43 +20,40 @@ export default function Home() {
     const router = useRouter();
     const dispatch = useDispatch();
 
-    const [notification, setNotification] = useState<any>();
-    const user = useSelector((state: any) => state.user);
+    const user = useSelector(selectUser);
 
-    const getRooms = async () => {
-        try {
-            const { data, error } = await supabase.from("rooms").select("room_code");
-            if (error) throw error;
+    // const getRooms = async () => {
+    //     try {
+    //         const { data, error } = await supabase.from("rooms").select("room_code");
+    //         if (error) throw error;
 
-            if (data.length) return data.reduce((acc: any, val) => [...acc, val.room_code], []);
-        } catch (error) {
-            console.log(error);
-        }
+    //         if (data.length) return data.reduce((acc: any, val) => [...acc, val.room_code], []);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
+
+    const signin = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+        });
     };
 
-    const userCheck = async () => {
-        // const response = await axios.post("api/checkUser");
-        // console.log(response);
-        try {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
-            console.log(session);
-        } catch (error: any) {
-            console.log(error.message);
-            dispatch(loginError);
-        }
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        // if (response.data.user_in_room) router.push("rooms/" + response.data.room.room_code);
+    const signOut = async () => {
+        console.log("signing out");
+        const { error } = await supabase.auth.signOut();
+        dispatch(logoutSuccess({}));
     };
 
     const createRoom = async () => {
         try {
-            if (!Object.keys(user || {}).length) setNotification({ message: "Message", type: "ERROR" });
-            else setNotification({ type: "SUCCESS", message: "Room created." });
+            console.log(Object.keys(user).length);
+            if (!Object.keys(user).length) dispatch(actionError({ message: "Error" }));
+            else dispatch(actionSuccess({ message: "Success" }));
+            // if (!Object.keys(user).length) {
+            //     console.log("sdfsdf");
+            //     setNotification({ message: "Message", type: "ERROR" });
+            // } else setNotification({ type: "SUCCESS", message: "Room created." });
             // const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
             // if (roomCodes_error) throw roomCodes_error;
 
@@ -82,13 +78,8 @@ export default function Home() {
         console.log(response);
     };
 
-    useEffect(() => {
-        userCheck();
-    }, []);
-
     return (
         <Layout>
-            <Popup notification={notification} />
             <div className="w-full min-h-screen flex flex-col justify-center items-center">
                 <img src={"/logo.png"} alt="logo" className="w-3/4" />
 
@@ -99,6 +90,14 @@ export default function Home() {
 
                     <button onClick={() => router.push("/join")} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
                         Join room
+                    </button>
+
+                    <button onClick={signin} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
+                        Sign in
+                    </button>
+
+                    <button onClick={signOut} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
+                        Sign out
                     </button>
                 </div>
             </div>
