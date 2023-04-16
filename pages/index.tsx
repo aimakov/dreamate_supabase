@@ -6,6 +6,8 @@ import { generateRoomCode } from "@/functions/generateRoomCode";
 import axios from "axios";
 import { useRouter } from "next/router";
 
+import Popup from "@/components/Popup";
+
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser, loginSuccess, logoutSuccess, loginError } from "@/store/authSlice";
 // interface Room {
@@ -18,6 +20,9 @@ import { selectUser, loginSuccess, logoutSuccess, loginError } from "@/store/aut
 export default function Home() {
     const router = useRouter();
     const dispatch = useDispatch();
+
+    const [notification, setNotification] = useState<any>();
+    const user = useSelector((state: any) => state.user);
 
     const getRooms = async () => {
         try {
@@ -51,19 +56,21 @@ export default function Home() {
 
     const createRoom = async () => {
         try {
-            const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
-            if (roomCodes_error) throw roomCodes_error;
+            if (!Object.keys(user || {}).length) setNotification({ message: "Message", type: "ERROR" });
+            else setNotification({ type: "SUCCESS", message: "Room created." });
+            // const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
+            // if (roomCodes_error) throw roomCodes_error;
 
-            const uniqueRoomCode = generateRoomCode(roomCodes_data);
+            // const uniqueRoomCode = generateRoomCode(roomCodes_data);
 
-            console.log(uniqueRoomCode);
+            // console.log(uniqueRoomCode);
 
-            const { error } = await supabase.from("rooms").insert({ room_code: uniqueRoomCode });
-            if (error) throw error;
+            // const { error } = await supabase.from("rooms").insert({ room_code: uniqueRoomCode });
+            // if (error) throw error;
 
-            console.log("New room created: " + uniqueRoomCode);
+            // console.log("New room created: " + uniqueRoomCode);
 
-            router.push("rooms/" + uniqueRoomCode);
+            // router.push("rooms/" + uniqueRoomCode);
         } catch (error) {
             console.log(error);
         }
@@ -81,6 +88,7 @@ export default function Home() {
 
     return (
         <Layout>
+            <Popup notification={notification} />
             <div className="w-full min-h-screen flex flex-col justify-center items-center">
                 <img src={"/logo.png"} alt="logo" className="w-3/4" />
 
