@@ -48,7 +48,7 @@ export default function Home() {
     const createRoom = async () => {
         try {
             console.log(Object.keys(user).length);
-            if (!Object.keys(user).length) dispatch(actionError({ message: "Error" }));
+            if (!Object.keys(user).length) dispatch(actionError({ message: "You are not logged in." }));
             else {
                 const { data: roomCodes_data, error: roomCodes_error } = await supabase.from("rooms").select("room_code");
                 if (roomCodes_error) throw roomCodes_error;
@@ -88,17 +88,19 @@ export default function Home() {
                         Create room
                     </button>
 
-                    <button onClick={() => router.push("/join")} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
+                    <button onClick={() => router.push("/join")} className="py-4 mb-10 w-[150px] bg-white/40 shadow-md rounded-2xl">
                         Join room
                     </button>
 
-                    <button onClick={signin} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
-                        Sign in
-                    </button>
-
-                    <button onClick={signOut} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
-                        Sign out
-                    </button>
+                    {Object.keys(user).length ? (
+                        <button onClick={signOut} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
+                            Sign out
+                        </button>
+                    ) : (
+                        <button onClick={signin} className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl">
+                            Sign in
+                        </button>
+                    )}
                 </div>
             </div>
         </Layout>

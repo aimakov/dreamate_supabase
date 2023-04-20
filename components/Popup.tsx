@@ -21,10 +21,13 @@ const Popup = () => {
 
     const showPopup = () => {
         setPopup(true);
-        dispatch(actionClear);
+
         setLoop(
             setTimeout(() => {
                 setPopup(false);
+                setTimeout(() => {
+                    dispatch(actionClear());
+                }, 500);
             }, 2000)
         );
     };
