@@ -108,6 +108,13 @@ export default function Home() {
             Join room
           </button>
 
+          <button
+            onClick={() => router.push("/rooms")}
+            className="py-4 mt-6 w-[150px] bg-white/40 shadow-md rounded-2xl"
+          >
+            Your rooms
+          </button>
+
           {Object.keys(user).length ? (
             <button
               onClick={signOut}

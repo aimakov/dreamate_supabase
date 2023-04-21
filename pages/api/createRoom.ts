@@ -21,21 +21,27 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { data: roomCodes_data, error: roomCodes_error } = await supabase
+    const { data: rooms_data, error: rooms_error } = await supabase
       .from("rooms")
-      .select("room_code");
+      .select();
 
-    const uniqueRoomCode = generateRoomCode(roomCodes_data);
+    if (rooms_error) res.status(400).json({ message: rooms_error.message });
 
-    const { data: roomNames_data, error: roomNames_error } = await supabase
-      .from("rooms")
-      .select("room_name");
+    const uniqueRoomCode = generateRoomCode(
+      rooms_data.reduce((acc: string[], val) => [...acc, val.room_code], [])
+    );
 
-    if (roomNames_error) console.log(roomNames_error);
+    // const { data: roomNames_data, error: roomNames_error } = await supabase
+    //   .from("rooms")
+    //   .select("room_name");
+
+    // console.log(roomNames_data);
+
+    // if (roomNames_error) console.log(roomNames_error);
 
     if (
-      roomNames_data
-        .reduce((acc, val) => [...acc, val.room_name], [])
+      rooms_data
+        .reduce((acc: string[], val) => [...acc, val.room_name], [])
         .includes(req.body.room_name)
     )
       res.status(400).json({ message: "Such room exists." });

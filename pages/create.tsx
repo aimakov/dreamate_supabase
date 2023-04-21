@@ -23,8 +23,13 @@ const Join = (props: Props) => {
 
   const createRoom = async () => {
     try {
+      // if (!roomName) {
+      //   dispatch(actionError({ message: "Enter room name." }));
+      //   return;
+      // }
+
       const response = await axios.post("api/createRoom", {
-        room_name: roomName,
+        room_name: roomName.toUpperCase(),
         host: user.id,
       });
       //   console.log(response);
@@ -50,7 +55,8 @@ const Join = (props: Props) => {
           <div className="flex flex-col gap-2">
             <button
               onClick={createRoom}
-              className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
+              disabled={!roomName}
+              className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all disabled:bg-gray-200 disabled:hover:cursor-not-allowed"
             >
               Create Room
             </button>
