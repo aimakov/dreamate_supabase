@@ -75,7 +75,7 @@ const Room = (props: Props) => {
 
     return (
         <Layout>
-            <div className="w-full min-h-screen flex flex-col justify-start items-center font-comfortaa pt-4 gap-4">
+            <div className="w-full min-h-screen flex flex-col justify-start items-center font-comfortaa pt-4 gap-4 transition-all">
                 <h2 className="text-xl text-[24px]">
                     Room Code: <span className="font-bold">{room_code}</span>
                 </h2>
@@ -85,6 +85,8 @@ const Room = (props: Props) => {
                     <Checkbox value={showTeamsSection} name={"Teams"} onChange={() => setShowTeamsSection((prevstate) => !prevstate)} />
                     <Checkbox value={showMusicSection} name={"Music"} onChange={() => setShowMusicSection((prevstate) => !prevstate)} />
                 </div>
+
+                <div className={`transition-all ${showTeamsSection ? "block opacity-100" : "hidden opacity-0"}`}>Teams</div>
 
                 {roomDetails?.users?.includes(user?.id) && (
                     <button onClick={leaveRoom} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
