@@ -9,6 +9,7 @@ module.exports = {
             },
             fontFamily: {
                 montserrat: ["montserrat"],
+                comfortaa: ["comfortaa"],
             },
         },
     },
