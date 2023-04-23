@@ -10,7 +10,9 @@ import { skillLevels } from "@/utils/skillLevels";
 import Radio from "@/components/Radio";
 
 import Checkbox from "@/components/Checkbox";
-import { FiX } from "react-icons/fi";
+import { FiX, FiPlusCircle, FiMinusCircle } from "react-icons/fi";
+import { useStateCallback } from "@/hooks/useStateCallback";
+import { generateTeams } from "@/functions/generateTeams";
 
 type Props = {};
 
@@ -28,9 +30,14 @@ const Room = (props: Props) => {
 
     const [playerName, setPlayerName] = useState("");
     const [playerSkill, setPlayerSkill] = useState<null | number>();
-    const [players, setPlayers] = useState([]);
+    const [players, setPlayers] = useStateCallback([]);
 
     const teamsRef = useRef<HTMLInputElement>();
+
+    const [loading, setLoading] = useState(false);
+    const [teamsNumber, setTeamsNumber] = useState(2);
+
+    const [shuffledPlayers, setShuffledPlayers] = useState([]);
 
     const getRoomDetails = async () => {
         try {
@@ -38,10 +45,8 @@ const Room = (props: Props) => {
 
             if (error) throw error;
 
-            console.log("Room details");
-            console.log(data);
-
             setRoomDetails(data[0]);
+            setPlayers(data[0].players);
         } catch (error) {
             router.push("/");
             console.log(error);
@@ -76,10 +81,6 @@ const Room = (props: Props) => {
     };
 
     useEffect(() => {
-        console.log(showTeamsSection);
-    }, [showTeamsSection]);
-
-    useEffect(() => {
         if (room_code) getRoomDetails();
     }, [room_code]);
 
@@ -108,14 +109,41 @@ const Room = (props: Props) => {
         };
     }, [showTeamsSection]);
 
-    useEffect(() => {
-        console.log(playerSkill);
-    }, [playerSkill]);
-
     const addPlayer = () => {
-        setPlayers((prevstate) => [...prevstate, { name: playerName, skill: playerSkill }]);
+        setPlayers(
+            (prevstate: any) => [...prevstate, { name: playerName, skill: playerSkill }],
+            async (newState: any) => addPlayerSupabase(newState)
+        );
         setPlayerName("");
         setPlayerSkill(null);
+    };
+
+    const addPlayerSupabase = async (players: any) => {
+        const { error } = await supabase.from("rooms").update({ players: players }).eq("room_code", room_code);
+        if (error) {
+            dispatch(actionError({ message: error.message }));
+            return;
+        }
+    };
+
+    // const getPlayers = async () => {
+    //     const { data, error } = await supabase.from("rooms").select("players").eq("room_code", room_code);
+    //     if (error) {
+    //         dispatch(actionError({ message: error.message }));
+    //         return;
+    //     }
+
+    //     console.log(data);
+    // };
+
+    // useEffect(() => {
+    //     if (players.length) {
+    //         addPlayerSupabase();
+    //     }
+    // }, [players]);
+
+    const shuffleTeams = () => {
+        console.log(generateTeams(teamsNumber, players));
     };
 
     const deletePlayer = (name: string) => {
@@ -146,6 +174,7 @@ const Room = (props: Props) => {
                         <div className="my-3 grid grid-cols-2 grid-rows-2 w-full px-2 gap-y-2">
                             {skillLevels.map((skillLevel) => (
                                 <Radio
+                                    key={skillLevel.id}
                                     setPlayerSkill={setPlayerSkill}
                                     name={skillLevel.id}
                                     value={skillLevel.value}
@@ -153,15 +182,40 @@ const Room = (props: Props) => {
                                 />
                             ))}
                         </div>
+                        {/* <button
+                            onClick={() => {
+                                console.log(players);
+                            }}
+                            className="bg-white w-[100px] text-center h-[32px] rounded-full text-sm"
+                        >
+                            Add Player
+                        </button> */}
                         <button onClick={addPlayer} className="bg-white w-[100px] text-center h-[32px] rounded-full text-sm">
                             Add Player
                         </button>
+                    </div>
+                    <div className="w-11/12 rounded-xl bg-white/30  flex items-center py-2 px-3 gap-2 justify-around">
+                        <div className="flex flex-col text-sm gap-1">
+                            <div>Teams #</div>
+                            <div className="flex items-center justify-around">
+                                <FiMinusCircle onClick={() => setTeamsNumber((prevstate) => (prevstate > 2 ? prevstate - 1 : prevstate))} />
+                                <span>{teamsNumber}</span>
+                                <FiPlusCircle onClick={() => setTeamsNumber((prevstate) => prevstate + 1)} />
+                            </div>
+                        </div>
+                        <button onClick={shuffleTeams} className="w-2/6 bg-white rounded-xl self-stretch text-sm">
+                            Shuffle
+                        </button>
+                        <div className="flex flex-col items-center justify-center text-sm gap-1">
+                            <p>Players #</p>
+                            {players.length}
+                        </div>
                     </div>
                     <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
                         {players.length > 0 ? (
                             <div className="w-full flex flex-col gap-2">
                                 {players.map((player) => (
-                                    <div className="text-sm w-full flex justify-between px-4">
+                                    <div key={player.name} className="text-sm w-full flex justify-between px-4">
                                         <p>{player.name}</p>{" "}
                                         <div className="flex gap-2">
                                             <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
@@ -170,6 +224,13 @@ const Room = (props: Props) => {
                                     </div>
                                 ))}
                             </div>
+                        ) : (
+                            <p className=" text-sm">No players in the room.</p>
+                        )}
+                    </div>
+                    <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                        {shuffledPlayers.length > 0 ? (
+                            <div className="w-full flex flex-col gap-2">{new Array(teamsNumber)}</div>
                         ) : (
                             <p className=" text-sm">No players in the room.</p>
                         )}
