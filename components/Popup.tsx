@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectMessage, selectType, selectToggle, actionClear } from "@/store/popupSlice";
 
@@ -25,22 +25,26 @@ const Popup = () => {
         setLoop(
             setTimeout(() => {
                 setPopup(false);
-                setTimeout(() => {
-                    dispatch(actionClear(""));
-                }, 500);
-            }, 2000)
+                // setTimeout(() => {
+                //     dispatch(actionClear(""));
+                // }, 500);
+            }, 1000)
         );
     };
 
-    useEffect(() => {
-        if (message) {
-            showPopup();
-        }
-
-        return () => {
-            clearTimeout(loop);
-        };
+    const memo = useMemo(() => {
+        if (message) showPopup();
     }, [toggle]);
+
+    // useEffect(() => {
+    //     if (message) {
+    //         showPopup();
+    //     }
+
+    //     return () => {
+    //         clearTimeout(loop);
+    //     };
+    // }, [toggle]);
 
     return (
         <div

@@ -122,10 +122,21 @@ const Room = (props: Props) => {
     }, [showTeamsSection]);
 
     const addPlayer = () => {
-        setPlayers(
-            (prevstate: any) => [...prevstate, { name: playerName, skill: playerSkill }],
-            async (newState: any) => updatePlayersSupabase(newState)
-        );
+        if (players?.length) {
+            if (players.reduce((acc, val) => [...acc, val.name.toUpperCase()], []).includes(playerName.toUpperCase())) {
+                dispatch(actionError({ message: "Such user already exists." }));
+                setPlayerName("");
+                setPlayerSkill(null);
+                return;
+            }
+            setPlayers(
+                (prevstate: any) => [...prevstate, { name: playerName, skill: playerSkill }],
+                async (newState: any) => updatePlayersSupabase(newState)
+            );
+        } else {
+            setPlayers([{ name: playerName, skill: playerSkill }], async (newState: any) => updatePlayersSupabase(newState));
+        }
+
         setPlayerName("");
         setPlayerSkill(null);
     };
@@ -171,16 +182,21 @@ const Room = (props: Props) => {
     const shuffleTeams = () => {
         // console.log(generateTeams(teamsNumber, players));
         // setShuffledPlayers(generateTeams(teamsNumber, players));
-        setPlayers(generateTeams(teamsNumber, players));
+        setPlayers(generateTeams(teamsNumber, players), (newstate) => updatePlayersSupabase(newstate));
 
         setShowTeams(true);
     };
 
     useEffect(() => {
-        if (Object.keys(shuffledPlayers).length) {
+        if (players.filter((player) => player.team !== undefined).length) {
             shuffleTeams();
         }
     }, [teamsNumber]);
+
+    const logging = () => {
+        if (shuffledPlayers.filter((player) => player.team !== undefined).length)
+            console.log(shuffledPlayers.filter((player) => player.team !== undefined).length);
+    };
 
     return (
         <Layout>
@@ -240,59 +256,51 @@ const Room = (props: Props) => {
                         </button>
                         <div className="flex flex-col items-center justify-center text-sm gap-1">
                             <p>Players #</p>
-                            {players.length}
+                            {players?.length ?? 0}
                         </div>
                     </div>
                     {showTeams ? (
                         <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
-                            {shuffledPlayers.length > 0 ? (
-                                <>
-                                    <div className="w-full flex  gap-2 justify-around flex-wrap">
-                                        {[...new Array(teamsNumber)].map((el, i) => (
-                                            <div key={i} className="">
-                                                <h2>Team #{i + 1}</h2>
-                                                <div>
-                                                    {shuffledPlayers
-                                                        .filter((player: any) => player.team === i + 1)
-                                                        .map((player: any) => (
-                                                            <div key={player.name} className="text-[13px]">
-                                                                {player.name} {player.skill}
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {Object.keys(players).length !== Object.keys(shuffledPlayers).length ? (
-                                        <div className="w-full flex flex-col gap-2">
-                                            <h2 className="text-center">Unshuffled players: </h2>
-                                            {players.map((player) => {
-                                                if (!shuffledPlayers.reduce((acc, val) => [...acc, val.name], []).includes(player.name))
-                                                    return (
-                                                        <div key={player.name} className="text-sm w-full flex justify-between px-4">
-                                                            <p>{player.name}</p>{" "}
-                                                            <div className="flex gap-2">
-                                                                <p className="text-xs">
-                                                                    {skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}
-                                                                </p>
-                                                                <FiX onClick={() => deletePlayer(player.name)} className="" />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                            })}
+                            <div className="w-full flex  gap-2 justify-around flex-wrap">
+                                {[...new Array(teamsNumber)].map((el, i) => (
+                                    <div key={i} className="">
+                                        <h2>Team #{i + 1}</h2>
+                                        <div>
+                                            {players
+                                                .filter((player: any) => player.team === i + 1)
+                                                .map((player: any) => (
+                                                    <div key={player.name} className="text-[13px]">
+                                                        {player.name} {player.skill}
+                                                    </div>
+                                                ))}
                                         </div>
-                                    ) : null}
-                                    <button onClick={() => setShowTeams(false)} className="bg-white px-2 py-2 rounded-xl text-sm mt-2">
-                                        Show players
-                                    </button>
-                                </>
-                            ) : (
-                                <p className=" text-sm">No teams in the room.</p>
-                            )}
+                                    </div>
+                                ))}
+                            </div>
+                            {players.filter((player) => player.team !== undefined).length !== players.length ? (
+                                <div className="w-full flex flex-col gap-2">
+                                    <h2 className="text-center">Unshuffled players: </h2>
+                                    {players.map((player) => {
+                                        if (player.team === undefined)
+                                            return (
+                                                <div key={player.name} className="text-sm w-full flex justify-between px-4">
+                                                    <p>{player.name}</p>{" "}
+                                                    <div className="flex gap-2">
+                                                        <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
+                                                        <FiX onClick={() => deletePlayer(player.name)} className="" />
+                                                    </div>
+                                                </div>
+                                            );
+                                    })}
+                                </div>
+                            ) : null}
+                            <button onClick={() => setShowTeams(false)} className="bg-white px-2 py-2 rounded-xl text-sm mt-2">
+                                Show players
+                            </button>
                         </div>
                     ) : (
                         <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
-                            {players.length > 0 ? (
+                            {players?.length > 0 ? (
                                 <>
                                     <div className="w-full flex flex-col gap-2">
                                         {players.map((player) => (
@@ -306,7 +314,7 @@ const Room = (props: Props) => {
                                         ))}
                                     </div>
 
-                                    {shuffledPlayers.length > 0 && (
+                                    {players.filter((player) => player.team !== undefined).length > 0 && (
                                         <button onClick={() => setShowTeams(true)} className="bg-white px-2 py-2 rounded-xl text-sm mt-2">
                                             Show teams
                                         </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabaseClient";
-import { useDispatch } from "react-redux";
-import { loginSuccess, loginError, logoutSuccess } from "@/store/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { loginSuccess, loginError, logoutSuccess, selectUser } from "@/store/authSlice";
 import Popup from "./Popup";
 
 type Props = {
@@ -10,12 +10,16 @@ type Props = {
 
 const Layout = (props: Props) => {
     const dispatch = useDispatch();
+    const user = useSelector(selectUser);
 
     useEffect(() => {
         supabase.auth.onAuthStateChange((event, session) => {
-            // console.log(event);
-            // console.log(session);
-            if (session) dispatch(loginSuccess(session.user));
+            console.log(event);
+            console.log(Object.keys(user).length);
+            if (event === "INITIAL_SESSION") console.log("PIDOR");
+
+            if (!Object.keys(user).length && session) dispatch(loginSuccess(session.user));
+            else if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
             else dispatch(logoutSuccess);
             // if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
             // if (event === "SIGNED_OUT") dispatch(logoutSuccess);
