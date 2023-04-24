@@ -31,11 +31,11 @@ export const generateTeams = (teamsNumber: number, players: Player[]) => {
 
         sortedRandomPlayers = sortedRandomPlayers.flat(2);
 
-        for (const skill in reducedPlayers) {
-            for (let i = reducedPlayers[skill].length; i > 0; i--) {
-                sortedPlayers.push(reducedPlayers[skill].splice(Math.floor(Math.random() * reducedPlayers[skill].length), 1)[0]);
-            }
-        }
+        // for (const skill in reducedPlayers) {
+        //     for (let i = reducedPlayers[skill].length; i > 0; i--) {
+        //         sortedPlayers.push(reducedPlayers[skill].splice(Math.floor(Math.random() * reducedPlayers[skill].length), 1)[0]);
+        //     }
+        // }
 
         for (let i = 0; i < sortedRandomPlayers.length; i++) {
             const team = Math.floor(i % teamsNumber) + 1;

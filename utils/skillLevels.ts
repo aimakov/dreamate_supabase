@@ -15,4 +15,8 @@ export const skillLevels = [
         id: "Advanced",
         value: 4,
     },
+    {
+        id: "Expert",
+        value: 5,
+    },
 ];

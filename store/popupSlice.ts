@@ -29,11 +29,6 @@ export const slice = createSlice({
         actionClear: (state, action) => {
             state.message = action.payload;
             state.type = action.payload;
-
-            setTimeout(() => {
-                state.message = "";
-                state.type = "";
-            }, 1000);
         },
     },
 });

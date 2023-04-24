@@ -122,6 +122,16 @@ const Room = (props: Props) => {
     }, [showTeamsSection]);
 
     const addPlayer = () => {
+        if (!playerName) {
+            dispatch(actionError({ message: "Enter player's name." }));
+            return;
+        }
+
+        if (!playerSkill) {
+            dispatch(actionError({ message: "Enter player's skill." }));
+            return;
+        }
+
         if (players?.length) {
             if (players.reduce((acc, val) => [...acc, val.name.toUpperCase()], []).includes(playerName.toUpperCase())) {
                 dispatch(actionError({ message: "Such user already exists." }));
@@ -131,10 +141,10 @@ const Room = (props: Props) => {
             }
             setPlayers(
                 (prevstate: any) => [...prevstate, { name: playerName, skill: playerSkill }],
-                async (newState: any) => updatePlayersSupabase(newState)
+                (newState: any) => updatePlayersSupabase(newState)
             );
         } else {
-            setPlayers([{ name: playerName, skill: playerSkill }], async (newState: any) => updatePlayersSupabase(newState));
+            setPlayers([{ name: playerName, skill: playerSkill }], (newState: any) => updatePlayersSupabase(newState));
         }
 
         setPlayerName("");
@@ -142,7 +152,10 @@ const Room = (props: Props) => {
     };
 
     const deletePlayer = (name: string) => {
-        setPlayers(players.filter((player) => player.name !== name));
+        setPlayers(
+            players.filter((player) => player.name !== name),
+            (newState: any) => updatePlayersSupabase(newState)
+        );
     };
 
     // const deletePlayer = (name) => {
@@ -200,7 +213,7 @@ const Room = (props: Props) => {
 
     return (
         <Layout>
-            <div className="w-full min-h-screen flex flex-col justify-start items-center font-comfortaa pt-4 gap-4 transition-all">
+            <div className="w-full py-10 max-w-sm mx-auto min-h-screen flex flex-col justify-start items-center font-comfortaa pt-4 gap-4 transition-all">
                 <h2 className="text-xl text-[24px]">
                     Room Code: <span className="font-bold">{room_code}</span>
                 </h2>
@@ -219,7 +232,7 @@ const Room = (props: Props) => {
                             placeholder="Player's name"
                             className="w-full rounded-md py-[5px] px-3 placeholder:text-sm placeholder:text-gray-500 text-sm "
                         />
-                        <div className="my-3 grid grid-cols-2 grid-rows-2 w-full px-2 gap-y-2">
+                        <div className="my-3 grid grid-cols-2 w-full px-2 gap-y-2">
                             {skillLevels.map((skillLevel) => (
                                 <Radio
                                     key={skillLevel.id}
@@ -246,9 +259,15 @@ const Room = (props: Props) => {
                         <div className="flex flex-col text-sm gap-1">
                             <div>Teams #</div>
                             <div className="flex items-center justify-around">
-                                <FiMinusCircle onClick={() => setTeamsNumber((prevstate) => (prevstate > 2 ? prevstate - 1 : prevstate))} />
+                                <FiMinusCircle
+                                    className=" hover:cursor-pointer"
+                                    onClick={() => setTeamsNumber((prevstate) => (prevstate > 2 ? prevstate - 1 : prevstate))}
+                                />
                                 <span>{teamsNumber}</span>
-                                <FiPlusCircle onClick={() => setTeamsNumber((prevstate) => prevstate + 1)} />
+                                <FiPlusCircle
+                                    className=" hover:cursor-pointer"
+                                    onClick={() => setTeamsNumber((prevstate) => (prevstate === players.length ? prevstate : prevstate + 1))}
+                                />
                             </div>
                         </div>
                         <button onClick={shuffleTeams} className="w-2/6 bg-white rounded-xl self-stretch text-sm">
@@ -261,9 +280,10 @@ const Room = (props: Props) => {
                     </div>
                     {showTeams ? (
                         <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
-                            <div className="w-full flex  gap-2 justify-around flex-wrap">
+                            {/* <div className="w-full grid grid-cols-2 gap-y-6 text-center"> */}
+                            <div className="w-full flex flex-wrap justify-center gap-y-6 text-center">
                                 {[...new Array(teamsNumber)].map((el, i) => (
-                                    <div key={i} className="">
+                                    <div key={i} className="flex flex-col gap-1 w-2/4">
                                         <h2>Team #{i + 1}</h2>
                                         <div>
                                             {players
@@ -287,7 +307,7 @@ const Room = (props: Props) => {
                                                     <p>{player.name}</p>{" "}
                                                     <div className="flex gap-2">
                                                         <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
-                                                        <FiX onClick={() => deletePlayer(player.name)} className="" />
+                                                        <FiX className=" hover:cursor-pointer" onClick={() => deletePlayer(player.name)} />
                                                     </div>
                                                 </div>
                                             );
@@ -308,7 +328,7 @@ const Room = (props: Props) => {
                                                 <p>{player.name}</p>{" "}
                                                 <div className="flex gap-2">
                                                     <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
-                                                    <FiX onClick={() => deletePlayer(player.name)} className="" />
+                                                    <FiX className=" hover:cursor-pointer" onClick={() => deletePlayer(player.name)} />
                                                 </div>
                                             </div>
                                         ))}
@@ -326,6 +346,10 @@ const Room = (props: Props) => {
                         </div>
                     )}
                 </div>
+
+                <button onClick={() => router.push("/")} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
+                    Homepage
+                </button>
 
                 {roomDetails?.users?.includes(user?.id) && (
                     <button onClick={leaveRoom} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">

@@ -14,18 +14,8 @@ const Layout = (props: Props) => {
 
     useEffect(() => {
         supabase.auth.onAuthStateChange((event, session) => {
-            console.log(event);
-            console.log(Object.keys(user).length);
-            if (event === "INITIAL_SESSION") console.log("PIDOR");
-
-            if (!Object.keys(user).length && session) dispatch(loginSuccess(session.user));
-            else if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
+            if (Object.keys(user).length < 1 && session) dispatch(loginSuccess(session.user));
             else dispatch(logoutSuccess);
-            // if (event === "SIGNED_IN") dispatch(loginSuccess(session.user));
-            // if (event === "SIGNED_OUT") dispatch(logoutSuccess);
-            // if (session?.user.id) {
-            //     dispatch(loginSuccess(session.user));
-            // } else dispatch(logoutSuccess);
         });
     }, []);
 

@@ -36,7 +36,7 @@ const Join = (props: Props) => {
             dispatch(actionSuccess({ message: response.data.message }));
             setTimeout(() => {
                 router.push(`/rooms/${response.data.room_code}`);
-            }, 1000);
+            }, 2000);
         } catch (error) {
             console.log(error);
             dispatch(actionError({ message: error.response.data.message }));

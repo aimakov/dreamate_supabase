@@ -25,26 +25,26 @@ const Popup = () => {
         setLoop(
             setTimeout(() => {
                 setPopup(false);
-                // setTimeout(() => {
-                //     dispatch(actionClear(""));
-                // }, 500);
-            }, 1000)
+                setTimeout(() => {
+                    dispatch(actionClear(""));
+                }, 300);
+            }, 1500)
         );
     };
 
-    const memo = useMemo(() => {
-        if (message) showPopup();
-    }, [toggle]);
-
-    // useEffect(() => {
-    //     if (message) {
-    //         showPopup();
-    //     }
-
-    //     return () => {
-    //         clearTimeout(loop);
-    //     };
+    // const memo = useMemo(() => {
+    //     if (message) showPopup();
     // }, [toggle]);
+
+    useEffect(() => {
+        if (message) {
+            showPopup();
+        }
+
+        return () => {
+            clearTimeout(loop);
+        };
+    }, [toggle]);
 
     return (
         <div
@@ -52,7 +52,7 @@ const Popup = () => {
                 top: popup ? "80px" : "-140px",
                 backgroundColor: colorCodes[type],
             }}
-            className={`p-4 text-center rounded-md shadow-md inline-block absolute transition-all left-2/4 -translate-x-1/2 ease-in-out duration-300 z-50`}
+            className={`p-4 text-center rounded-md shadow-md inline-block absolute transition-all left-2/4 -translate-x-1/2 ease-in-out duration-500 z-50`}
         >
             {message}
         </div>
