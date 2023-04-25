@@ -5,7 +5,7 @@ import Link from "next/link";
 
 type Props = {};
 
-export default function (props: Props) {
+export default function ErrorPage(props: Props) {
     const router = useRouter();
 
     return (
