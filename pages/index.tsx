@@ -90,7 +90,7 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="w-full min-h-screen flex flex-col justify-center items-center">
+      <div className="w-full min-h-screen flex flex-col justify-center items-center max-w-sm mx-auto">
         <img src={"/logo.png"} alt="logo" className="w-3/4" />
 
         <div className="flex flex-col mt-10 gap-3">
@@ -110,7 +110,8 @@ export default function Home() {
 
           <button
             onClick={() => router.push("/rooms")}
-            className="py-4 mt-6 w-[150px] bg-white/40 shadow-md rounded-2xl"
+            disabled={!user?.id}
+            className="py-4 mt-6 w-[150px] bg-white/40 shadow-md rounded-2xl disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Your rooms
           </button>
