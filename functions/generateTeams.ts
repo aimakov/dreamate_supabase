@@ -37,13 +37,23 @@ export const generateTeams = (teamsNumber: number, players: Player[]) => {
         //     }
         // }
 
-        for (let i = 0; i < sortedRandomPlayers.length; i++) {
-            const team = Math.floor(i % teamsNumber) + 1;
-            sortedRandomPlayers[i].team = team;
+        // console.log(sortedRandomPlayers);
+
+        for (let i = 0; i < Math.ceil(sortedRandomPlayers.length / teamsNumber); i++) {
+            let subDivision = sortedRandomPlayers.slice(teamsNumber * i, teamsNumber * (i + 1));
+
+            subDivision = subDivision.sort(() => Math.random() - 0.5);
+
+            for (let j = 0; j < teamsNumber; j++) {
+                if (subDivision[j] === undefined) break;
+                sortedRandomPlayers.filter((player) => player.name === subDivision[j].name)[0].team = j + 1;
+            }
         }
 
-        console.log("Final");
-        console.log(sortedRandomPlayers);
+        // for (let i = 0; i < sortedRandomPlayers.length; i++) {
+        //     const team = Math.floor(i % teamsNumber) + 1;
+        //     sortedRandomPlayers[i].team = team;
+        // }
 
         // for (let i = 0; i < Math.ceil(players.length / teamsNumber); i++) {
         //     let team = sortedPlayers.slice(i * teamsNumber, Math.min(i * teamsNumber + teamsNumber, players.length));
