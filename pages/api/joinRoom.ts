@@ -2,13 +2,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/utils/supabaseClient";
 import { getSession } from "../../utils/get-session";
+import { escape } from "querystring";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    console.log(req.body.roomCode);
+    console.log(req.body.room_code);
+    // console.log(req);
 
     const { data, error } = await supabase
       .from("rooms")
@@ -17,30 +19,26 @@ export default async function handler(
 
     if (error) throw error;
 
-    if (data.length) {
-      // const session = await getSession(req, res);
-      // session.room = { room_code: req.body.room_code, host: false };
-      // console.log(session);
+    console.log(data.length);
 
+    if (data.length) {
       const { error } = await supabase
         .from("rooms")
-        .update({ users: [...data[0].users, req.body.user_id] })
+        .update({ users: [...(data[0].users ?? []), req.body.user_id] })
         .eq("room_code", req.body.room_code);
 
-      if (error)
-        res.status(400).json({ success: false, message: error.message });
+      if (error) throw error;
+      // res.status(400).json({ success: false, message: error.message });
 
       res.status(200).json({ success: true });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "Such room doesn't exist." });
     }
 
     // console.log(data[0].id);
   } catch (error) {
-    res.status(400).json({ success: false });
+    res.status(400).json({ success: false, message: error.message });
   }
-
-  const session = await getSession(req, res);
-  //   if (session.room) res.status(200).json(session.room);
-  //   else res.status(200).json(false);
-
-  res.status(200).json(session.room);
 }
