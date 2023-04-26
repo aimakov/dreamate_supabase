@@ -252,7 +252,7 @@ const Room = (props: Props) => {
     }, [teamsNumber]);
 
     if (!roomDetails?.id) return <Layout> </Layout>;
-    else if (!roomDetails.users.includes(user.id) && roomDetails.host !== user.id) router.push("/");
+    else if (!roomDetails.users?.includes(user.id) && roomDetails.host !== user.id) router.push("/");
     else
         return (
             <Layout>
