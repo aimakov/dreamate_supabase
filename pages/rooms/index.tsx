@@ -54,8 +54,9 @@ const Rooms = (props: Props) => {
                                     <div
                                         key={userRoom.id}
                                         onClick={() => router.push("/rooms/" + userRoom.room_code)}
-                                        className="px-6 py-3 min-w-[150px] bg-white/30 rounded-3xl text-center hover:cursor-pointer"
+                                        className="px-6 py-3 min-w-[200px] max-w-full bg-white/30 rounded-3xl text-center hover:cursor-pointer break-words"
                                     >
+                                        <p className="text-[10px] font-light">{userRoom.room_code}</p>
                                         {userRoom.room_name}
                                     </div>
                                 ))}
@@ -66,15 +67,18 @@ const Rooms = (props: Props) => {
                     {joinedRooms.length > 0 && (
                         <div className="w-full flex flex-col items-center">
                             <h2 className=" text-xl mb-4">Joined rooms:</h2>
-                            {joinedRooms.map((joinedRoom) => (
-                                <div
-                                    key={joinedRoom.id}
-                                    onClick={() => router.push("/rooms/" + joinedRoom.room_code)}
-                                    className="px-5 py-3 w-3/4 bg-white/30 rounded-3xl text-center hover:cursor-pointer"
-                                >
-                                    {joinedRoom.room_name}
-                                </div>
-                            ))}
+                            <div className="w-full flex flex-col gap-2 items-center">
+                                {joinedRooms.map((joinedRoom) => (
+                                    <div
+                                        key={joinedRoom.id}
+                                        onClick={() => router.push("/rooms/" + joinedRoom.room_code)}
+                                        className="px-6 py-3 min-w-[200px] max-w-full bg-white/30 rounded-3xl text-center hover:cursor-pointer break-words"
+                                    >
+                                        <p className="text-[10px] font-light">{joinedRoom.room_code}</p>
+                                        {joinedRoom.room_name}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

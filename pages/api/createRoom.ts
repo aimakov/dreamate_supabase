@@ -32,21 +32,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // if (roomNames_error) console.log(roomNames_error);
 
-        if (rooms_data.reduce((acc: string[], val) => [...acc, val.room_name], []).includes(req.body.room_name))
-            res.status(400).json({ message: "Such room exists." });
-        else {
-            const { data, error } = await supabase.from("rooms").upsert({
-                room_code: uniqueRoomCode,
-                room_name: req.body.room_name,
-                host: req.body.host,
-            });
+        // if (rooms_data.reduce((acc: string[], val) => [...acc, val.room_name], []).includes(req.body.room_name))
+        //     res.status(400).json({ message: "Such room exists." });
+        // else {
+        const { data, error } = await supabase.from("rooms").upsert({
+            room_code: uniqueRoomCode,
+            room_name: req.body.room_name,
+            host: req.body.host,
+        });
 
-            console.log(error);
+        console.log(error);
 
-            if (error) res.status(400).json({ message: error.message });
+        if (error) res.status(400).json({ message: error.message });
 
-            res.status(200).json({ message: `Room ${req.body.room_name} is created!`, room_code: uniqueRoomCode });
-        }
+        res.status(200).json({ message: `Room ${req.body.room_name} is created!`, room_code: uniqueRoomCode });
+        // }
 
         // if (roomCodes_error) throw roomCodes_error;
 

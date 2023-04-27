@@ -53,8 +53,6 @@ const Room = (props: Props) => {
 
             if (error) throw error;
 
-            console.log(data);
-
             if (!user.id) {
                 router.push("/");
                 dispatch(actionError({ message: `You are not signed in.` }));
@@ -67,10 +65,15 @@ const Room = (props: Props) => {
                 return;
             }
 
-            console.log(data[0]);
-
             setRoomDetails(data[0]);
             setPlayers(data[0].players);
+
+            if (data[0].players?.length) {
+                let temp = data[0].players.filter((player) => player.team !== undefined);
+                if (temp.length) {
+                    setTeamsNumber(Math.max(...temp.reduce((acc, val) => [...acc, val.team], [])));
+                }
+            }
         } catch (error) {
             router.push("/");
             dispatch(actionError({ message: error.message }));
@@ -244,16 +247,19 @@ const Room = (props: Props) => {
     const shuffleTeams = () => {
         // console.log(generateTeams(teamsNumber, players));
         // setShuffledPlayers(generateTeams(teamsNumber, players));
-        setPlayers(generateTeams(teamsNumber, players), (newstate) => updatePlayersSupabase(newstate));
+        setPlayers(
+            generateTeams(teamsNumber, players).sort(() => Math.random() - 0.5),
+            (newstate) => updatePlayersSupabase(newstate)
+        );
 
         setShowTeams(true);
     };
 
-    useEffect(() => {
-        if (players?.filter((player) => player.team !== undefined).length) {
-            shuffleTeams();
-        }
-    }, [teamsNumber]);
+    // useEffect(() => {
+    //     if (players?.filter((player) => player.team !== undefined).length) {
+    //         shuffleTeams();
+    //     }
+    // }, [teamsNumber]);
 
     if (!roomDetails?.id) return <Layout> </Layout>;
     else if (!roomDetails.users?.includes(user.id) && roomDetails.host !== user.id) router.push("/");
@@ -267,7 +273,7 @@ const Room = (props: Props) => {
                             <h2 className="text-xl text-[24px]">
                                 Room Code: <span className="font-bold">{room_code}</span>
                             </h2>
-                            {roomDetails?.host === user?.id && <p>You are the Host.</p>}
+                            {roomDetails?.host === user?.id ? <p>You are the Host.</p> : <p>You are a Guest.</p>}
 
                             <div className=" w-[200px] flex gap-4 max-w-xs justify-between">
                                 <Checkbox value={showTeamsSection} name={"Teams"} onChange={() => setShowTeamsSection((prevstate) => !prevstate)} />
@@ -353,7 +359,6 @@ const Room = (props: Props) => {
                                                     <div>
                                                         {players
                                                             .filter((player: any) => player.team === i + 1)
-                                                            .sort(() => Math.random() - 0.5)
                                                             .map((player: any) => (
                                                                 <div key={player.name} className="text-[13px]">
                                                                     {player.name}
@@ -363,24 +368,31 @@ const Room = (props: Props) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        {players.filter((player) => player.team !== undefined).length !== players.length ? (
+                                        {players.filter((player) => player.team === undefined || player.team > teamsNumber).length > 0 ? (
                                             <div className="w-full flex flex-col gap-2">
                                                 <h2 className="text-center">Unshuffled players: </h2>
                                                 {players.map((player) => {
-                                                    if (player.team === undefined)
+                                                    if (player.team === undefined || player.team > teamsNumber)
                                                         return (
-                                                            <div key={player.name} className="text-sm w-full flex justify-between px-4">
+                                                            <div
+                                                                key={player.name}
+                                                                className={`text-sm w-full flex ${
+                                                                    user?.id === roomDetails.host ? "justify-between" : "justify-center"
+                                                                } px-4`}
+                                                            >
                                                                 <p>{player.name}</p>{" "}
-                                                                <div className="flex gap-2 items-center">
-                                                                    <p className="text-xs">
-                                                                        {skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}
-                                                                    </p>
-                                                                    <FiX
-                                                                        className=" hover:cursor-pointer"
-                                                                        onClick={() => showDeletePlayerModal(player.name)}
-                                                                        // onClick={() => deletePlayer(player.name)}
-                                                                    />
-                                                                </div>
+                                                                {user?.id === roomDetails.host && (
+                                                                    <div className="flex gap-2 items-center">
+                                                                        <p className="text-xs">
+                                                                            {skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}
+                                                                        </p>
+                                                                        <FiX
+                                                                            className=" hover:cursor-pointer"
+                                                                            onClick={() => showDeletePlayerModal(player.name)}
+                                                                            // onClick={() => deletePlayer(player.name)}
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         );
                                                 })}
@@ -396,19 +408,26 @@ const Room = (props: Props) => {
                                             <>
                                                 <div className="w-full flex flex-col gap-2">
                                                     {players.map((player) => (
-                                                        <div key={player.name} className="text-sm w-full flex justify-between px-4">
+                                                        <div
+                                                            key={player.name}
+                                                            className={`text-sm w-full flex ${
+                                                                user?.id === roomDetails.host ? "justify-between" : "justify-center"
+                                                            } x px-4`}
+                                                        >
                                                             <p>{player.name}</p>{" "}
-                                                            <div className="flex gap-2 items-center">
-                                                                <p className="text-xs">
-                                                                    {skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}
-                                                                </p>
-                                                                <FiX
-                                                                    className=" hover:cursor-pointer"
-                                                                    //   onClick={() => deletePlayer(player.name)}
+                                                            {user?.id === roomDetails.host && (
+                                                                <div className="flex gap-2 items-center">
+                                                                    <p className="text-xs">
+                                                                        {skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}
+                                                                    </p>
+                                                                    <FiX
+                                                                        className=" hover:cursor-pointer"
+                                                                        //   onClick={() => deletePlayer(player.name)}
 
-                                                                    onClick={() => showDeletePlayerModal(player.name)}
-                                                                />
-                                                            </div>
+                                                                        onClick={() => showDeletePlayerModal(player.name)}
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
@@ -433,9 +452,17 @@ const Room = (props: Props) => {
                             </button>
 
                             {roomDetails?.users?.includes(user?.id) && (
-                                <button onClick={showLeaveRoomModal} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
-                                    Leave Room
-                                </button>
+                                <>
+                                    <button onClick={getRoomDetails} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
+                                        Refresh
+                                    </button>
+                                    <button
+                                        onClick={showLeaveRoomModal}
+                                        className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
+                                    >
+                                        Leave Room
+                                    </button>
+                                </>
                             )}
 
                             {roomDetails?.host === user?.id && (
