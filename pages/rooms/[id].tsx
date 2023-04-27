@@ -55,11 +55,19 @@ const Room = (props: Props) => {
 
             console.log(data);
 
+            if (!user.id) {
+                router.push("/");
+                dispatch(actionError({ message: `You are not signed in.` }));
+                return;
+            }
+
             if (!data.length) {
                 router.push("/");
                 dispatch(actionError({ message: `Room ${room_code} does not exist.` }));
                 return;
             }
+
+            console.log(data[0]);
 
             setRoomDetails(data[0]);
             setPlayers(data[0].players);
@@ -121,10 +129,6 @@ const Room = (props: Props) => {
         );
 
         setModalAction(() => () => deletePlayer(name));
-    };
-
-    const test = (name: string) => {
-        console.log(name);
     };
 
     useEffect(() => {
@@ -258,7 +262,7 @@ const Room = (props: Props) => {
             <Layout>
                 <>
                     <Modal confirmAction={modalAction} />
-                    <div className="w-full py-10 max-w-sm mx-auto min-h-screen flex flex-col justify-between items-center font-comfortaa  gap-4 transition-all">
+                    <div className="w-full py-10 max-w-sm mx-auto h-full flex flex-col justify-between items-center font-comfortaa gap-4 transition-all">
                         <div className="flex w-full flex-col gap-4 items-center">
                             <h2 className="text-xl text-[24px]">
                                 Room Code: <span className="font-bold">{room_code}</span>
@@ -290,14 +294,7 @@ const Room = (props: Props) => {
                                                 />
                                             ))}
                                         </div>
-                                        {/* <button
-                            onClick={() => {
-                                console.log(players);
-                            }}
-                            className="bg-white w-[100px] text-center h-[32px] rounded-full text-sm"
-                        >
-                            Add Player
-                        </button> */}
+
                                         <button onClick={addPlayer} className="bg-white w-[100px] text-center h-[32px] rounded-full text-sm">
                                             Add Player
                                         </button>
@@ -356,9 +353,10 @@ const Room = (props: Props) => {
                                                     <div>
                                                         {players
                                                             .filter((player: any) => player.team === i + 1)
+                                                            .sort(() => Math.random() - 0.5)
                                                             .map((player: any) => (
                                                                 <div key={player.name} className="text-[13px]">
-                                                                    {player.name} {player.skill}
+                                                                    {player.name}
                                                                 </div>
                                                             ))}
                                                     </div>

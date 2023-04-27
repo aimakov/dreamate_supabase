@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -45,28 +45,37 @@ const Join = (props: Props) => {
         // if (response.data.success) router.push("rooms/" + roomCode.toUpperCase());
     };
 
-    return (
-        <Layout>
-            <div className="w-full min-h-screen flex flex-col justify-center items-center font-montserrat">
-                <div className="w-[280px] h-[280px] bg-white/30 rounded-[20px] shadow-md flex flex-col justify-center items-center">
-                    <h2 className="text-2xl font-medium mb-[14px]">Enter Room Name:</h2>
-                    <input value={roomName} onChange={typeRoomName} className=" p-4 rounded-[4px] mb-[32px] text-center uppercase text-lg" />
-                    <div className="flex flex-col gap-2">
-                        <button
-                            onClick={createRoom}
-                            disabled={!roomName}
-                            className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all disabled:bg-gray-200 disabled:hover:cursor-not-allowed"
-                        >
-                            Create Room
-                        </button>
-                        <button onClick={() => router.back()} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
-                            Go Back
-                        </button>
+    useEffect(() => {
+        if (!user.id) {
+            router.push("/");
+            dispatch(actionError({ message: `You are not signed in.` }));
+        }
+    }, [router]);
+
+    if (!user.id) return <Layout> </Layout>;
+    else
+        return (
+            <Layout>
+                <div className="w-full min-h-screen flex flex-col justify-center items-center font-montserrat">
+                    <div className="w-[280px] h-[280px] bg-white/30 rounded-[20px] shadow-md flex flex-col justify-center items-center">
+                        <h2 className="text-2xl font-medium mb-[14px]">Enter Room Name:</h2>
+                        <input value={roomName} onChange={typeRoomName} className=" p-4 rounded-[4px] mb-[32px] text-center uppercase text-lg w-10/12" />
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={createRoom}
+                                disabled={!roomName}
+                                className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all disabled:bg-gray-200 disabled:hover:cursor-not-allowed"
+                            >
+                                Create Room
+                            </button>
+                            <button onClick={() => router.back()} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
+                                Go Back
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </Layout>
-    );
+            </Layout>
+        );
 };
 
 export default Join;
