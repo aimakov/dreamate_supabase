@@ -6,7 +6,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/store/authSlice";
 import { useDispatch } from "react-redux";
-import { actionError } from "@/store/popupSlice";
+import { actionError, actionSuccess } from "@/store/popupSlice";
 import { supabase } from "@/utils/supabaseClient";
 
 type Props = {};
@@ -23,17 +23,19 @@ const Join = (props: Props) => {
     };
 
     const joinRoom = async () => {
-        if (user.id) {
+        try {
             const response = await axios.post("api/joinRoom", {
                 room_code: roomCode.toUpperCase(),
                 user_id: user.id,
+                user_name: user.user_metadata.full_name,
             });
 
-            console.log(response);
-
-            if (response.data.success) router.push("rooms/" + roomCode.toUpperCase());
-        } else {
-            dispatch(actionError({ message: "You are not logged in." }));
+            dispatch(actionSuccess({ message: response.data.message }));
+            setTimeout(() => {
+                router.push("rooms/" + roomCode.toUpperCase());
+            }, 2000);
+        } catch (error) {
+            dispatch(actionError({ message: error.response.data.message }));
         }
     };
 

@@ -29,7 +29,7 @@ const Room = (props: Props) => {
     const [roomDetails, setRoomDetails] = useState<any>({});
 
     const [showTeamsSection, setShowTeamsSection] = useState(false);
-    const [opacityTeamsSection, setOpacityTeamsSection] = useState(false);
+    // const [opacityTeamsSection, setOpacityTeamsSection] = useState(false);
     const [showMusicSection, setShowMusicSection] = useState(false);
 
     const [playerName, setPlayerName] = useState("");
@@ -37,6 +37,7 @@ const Room = (props: Props) => {
     const [players, setPlayers] = useStateCallback([]);
 
     const teamsRef = useRef<HTMLInputElement>();
+    const musicRef = useRef<HTMLInputElement>();
 
     const [loading, setLoading] = useState(false);
     const [teamsNumber, setTeamsNumber] = useState(2);
@@ -173,6 +174,32 @@ const Room = (props: Props) => {
         };
     }, [showTeamsSection]);
 
+    useEffect(() => {
+        let timeout_music;
+        if (roomDetails.id) {
+            if (showMusicSection) {
+                if (musicRef.current !== undefined) {
+                    musicRef.current.style.display = "flex";
+                }
+
+                timeout_music = setTimeout(() => {
+                    if (musicRef.current !== undefined) {
+                        musicRef.current.style.opacity = "100%";
+                        musicRef.current.style.scale = "100%";
+                    }
+                }, 100);
+            } else {
+                musicRef.current.style.display = "none";
+                musicRef.current.style.opacity = "0%";
+                musicRef.current.style.scale = "90%";
+            }
+        }
+
+        return () => {
+            clearTimeout(timeout_music);
+        };
+    }, [showMusicSection]);
+
     const addPlayer = () => {
         if (!playerName) {
             dispatch(actionError({ message: "Enter player's name." }));
@@ -262,7 +289,7 @@ const Room = (props: Props) => {
     // }, [teamsNumber]);
 
     if (!roomDetails?.id) return <Layout> </Layout>;
-    else if (!roomDetails.users?.includes(user.id) && roomDetails.host !== user.id) router.push("/");
+    else if (!roomDetails.users?.reduce((acc, val) => [...acc, val.user_id], []).includes(user.id) && roomDetails.host !== user.id) router.push("/");
     else
         return (
             <Layout>
@@ -444,6 +471,10 @@ const Room = (props: Props) => {
                                     </div>
                                 )}
                             </div>
+
+                            <div ref={musicRef} className="hidden">
+                                Coming soon
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -451,7 +482,9 @@ const Room = (props: Props) => {
                                 Homepage
                             </button>
 
-                            {roomDetails?.users?.includes(user?.id) && (
+                            {/* room.users?.reduce((acc, val) => [...acc, val.user_id], []).includes(req.body.user_id) */}
+
+                            {roomDetails?.users?.reduce((acc, val) => [...acc, val.user_id], []).includes(user.id) && (
                                 <>
                                     <button onClick={getRoomDetails} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
                                         Refresh

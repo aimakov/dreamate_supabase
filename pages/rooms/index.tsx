@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "@/store/authSlice";
 import { useRouter } from "next/router";
 import { actionError } from "@/store/popupSlice";
+import axios from "axios";
 
 type Props = {};
 
@@ -18,7 +19,7 @@ const Rooms = (props: Props) => {
     const getUserRooms = async () => {
         const { data, error } = await supabase.from("rooms").select().eq("host", user.id);
         if (error) {
-            dispatch(actionError({ message: "Something went wrong." }));
+            dispatch(actionError({ message: "Something went wrong1." }));
             return;
         }
         // console.log(data);
@@ -26,12 +27,15 @@ const Rooms = (props: Props) => {
     };
 
     const getJoinedRooms = async () => {
-        const { data, error } = await supabase.from("rooms").select().contains("users", [user.id]);
-        if (error) {
-            dispatch(actionError({ message: "Something went wrong." }));
-            return;
+        try {
+            const response = await axios.post("api/getUserJoinedRooms", {
+                user_id: user.id,
+            });
+
+            setJoinedRooms(response.data);
+        } catch (error) {
+            dispatch(actionError({ message: "Something went wrong2." }));
         }
-        setJoinedRooms(data);
     };
 
     useEffect(() => {
