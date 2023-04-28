@@ -46,6 +46,8 @@ const Room = (props: Props) => {
 
   const [showTeams, setShowTeams] = useState(false);
 
+  const [channel, setChannel] = useState<any>();
+
   const [modalAction, setModalAction] = useState<MouseEventHandler>();
 
   const getRoomDetails = async () => {
@@ -146,8 +148,46 @@ const Room = (props: Props) => {
   };
 
   useEffect(() => {
-    if (room_code) getRoomDetails();
+    if (room_code) {
+      getRoomDetails();
+      setChannel(supabase.channel(`${room_code}`));
+
+      supabase
+        .channel(`${room_code}`)
+        .on("broadcast", { event: "test" }, (payload) => console.log(payload))
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            // your callback function will now be called with the messages broadcast by the other client
+          }
+        });
+    }
   }, [room_code]);
+
+  const sentSignal = async () => {
+    await channel.send({
+      type: "broadcast",
+      event: "test",
+      payload: {},
+    });
+  };
+
+  useEffect(() => {
+    if (channel) {
+      channel.subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          // now you can start broadcasting cursor positions
+          setInterval(() => {
+            channel.send({
+              type: "broadcast",
+              event: "test",
+              payload: { x: Math.random(), y: Math.random() },
+            });
+            // console.log(status);
+          }, 1000);
+        }
+      });
+    }
+  }, [channel]);
 
   //   useEffect(() => {
   //     if (shuffledPlayers.length) {
