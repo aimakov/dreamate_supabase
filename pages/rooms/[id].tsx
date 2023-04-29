@@ -19,6 +19,8 @@ import { showModal } from "@/store/modalSlice";
 import Modal from "@/components/Modal";
 import { subscribe } from "diagnostics_channel";
 
+import MusicSection from "@/components/MusicSection";
+
 type Props = {};
 
 const Room = (props: Props) => {
@@ -494,8 +496,8 @@ const Room = (props: Props) => {
                                 )}
                             </div>
 
-                            <div ref={musicRef} className="hidden">
-                                Coming soon
+                            <div ref={musicRef} className="hidden w-full max-w-sm">
+                                <MusicSection />
                             </div>
                         </div>
 
