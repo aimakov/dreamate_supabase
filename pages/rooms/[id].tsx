@@ -141,34 +141,25 @@ const Room = (props: Props) => {
     useEffect(() => {
         if (room_code) {
             getRoomDetails();
-            setChannel(supabase.channel(`${room_code}`));
 
-            console.log("subsribed");
             supabase
-                .channel("room1")
-                .on("broadcast", { event: "test" }, (payload) => console.log(payload))
+                .channel(`${room_code}`)
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "UPDATE",
+                        schema: "public",
+                        table: "rooms",
+                        // col: "players",
+                    },
+                    (payload) => {
+                        // if (payload.new.players.length !== players) setPlayers(payload.new.players);
+                        if (JSON.stringify(players) !== JSON.stringify(payload.new.players)) setPlayers(payload.new.players);
+                    }
+                )
                 .subscribe();
         }
     }, [room_code]);
-
-    const sendSignal = async () => {
-        const channel = supabase.channel("room1");
-
-        console.log("Trying to send");
-
-        // Subscribe registers your client with the server
-        channel.subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-                // now you can start broadcasting cursor positions
-                console.log("Trying to send 2");
-                channel.send({
-                    type: "broadcast",
-                    event: "test",
-                    payload: { message: "test123" },
-                });
-            }
-        });
-    };
 
     //   useEffect(() => {
     //     if (shuffledPlayers.length) {
@@ -517,9 +508,9 @@ const Room = (props: Props) => {
 
                             {roomDetails?.users?.reduce((acc, val) => [...acc, val.user_id], []).includes(user.id) && (
                                 <>
-                                    <button onClick={getRoomDetails} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
+                                    {/* <button onClick={getRoomDetails} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
                                         Refresh
-                                    </button>
+                                    </button> */}
                                     <button
                                         onClick={showLeaveRoomModal}
                                         className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
@@ -534,9 +525,6 @@ const Room = (props: Props) => {
                                     Close Room
                                 </button>
                             )}
-                            <button onClick={sendSignal} className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all">
-                                Send signal
-                            </button>
                         </div>
                     </div>
                 </>
