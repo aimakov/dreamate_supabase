@@ -51,6 +51,8 @@ const Room = (props: Props) => {
 
     const [channel, setChannel] = useState<any>();
 
+    const [songs, setSongs] = useStateCallback([]);
+
     const [modalAction, setModalAction] = useState<MouseEventHandler>();
 
     const getRoomDetails = async () => {
@@ -157,6 +159,7 @@ const Room = (props: Props) => {
                     (payload) => {
                         // if (payload.new.players.length !== players) setPlayers(payload.new.players);
                         if (JSON.stringify(players) !== JSON.stringify(payload.new.players)) setPlayers(payload.new.players);
+                        if (JSON.stringify(songs) !== JSON.stringify(payload.new.songs)) setSongs(payload.new.songs);
                     }
                 )
                 .subscribe();
@@ -497,7 +500,7 @@ const Room = (props: Props) => {
                             </div>
 
                             <div ref={musicRef} className="hidden w-full max-w-sm">
-                                <MusicSection />
+                                <MusicSection songs={songs} setSongs={setSongs} room_code={`${room_code}`} />
                             </div>
                         </div>
 
