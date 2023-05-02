@@ -75,6 +75,9 @@ const Room = (props: Props) => {
 
             setRoomDetails(data[0]);
             setPlayers(data[0].players);
+            setSongs(data[0].songs);
+
+            console.log(data[0].songs);
 
             if (data[0].players?.length) {
                 let temp = data[0].players.filter((player) => player.team !== undefined);
