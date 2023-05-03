@@ -503,7 +503,7 @@ const Room = (props: Props) => {
                             </div>
 
                             <div ref={musicRef} className="hidden w-full max-w-sm">
-                                <MusicSection songs={songs} setSongs={setSongs} room_code={`${room_code}`} />
+                                <MusicSection setModalAction={setModalAction} songs={songs} setSongs={setSongs} room_code={`${room_code}`} />
                             </div>
                         </div>
 
