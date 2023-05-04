@@ -16,6 +16,7 @@ const Join = (props: Props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [roomCode, setRoomCode] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const typeRoomCode = (e: any) => {
     if (e.target.value.length > 6) return;
@@ -24,6 +25,7 @@ const Join = (props: Props) => {
 
   const joinRoom = async () => {
     try {
+      setLoading(true);
       const response = await axios.post("api/joinRoom", {
         room_code: roomCode.toUpperCase(),
         user_id: user.id,
@@ -32,9 +34,11 @@ const Join = (props: Props) => {
 
       dispatch(actionSuccess({ message: response.data.message }));
       setTimeout(() => {
+        setLoading(false);
         router.push("rooms/" + roomCode.toUpperCase());
       }, 2000);
     } catch (error) {
+      setLoading(false);
       dispatch(actionError({ message: error.response.data.message }));
     }
   };
@@ -69,11 +73,15 @@ const Join = (props: Props) => {
             />
             <div className="flex flex-col gap-2">
               <button
-                disabled={roomCode.length < 6}
+                disabled={roomCode.length < 6 || loading}
                 onClick={joinRoom}
-                className=" disabled:bg-gray-300 disabled:hover:cursor-not-allowed w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
+                className=" disabled:bg-gray-300 disabled:hover:cursor-not-allowed w-[130px] h-[44px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
               >
-                Join Room
+                {loading ? (
+                  <img src="/loading.gif" className="w-[34px] mx-auto" />
+                ) : (
+                  "Join Room"
+                )}
               </button>
               <button
                 onClick={() => router.back()}
