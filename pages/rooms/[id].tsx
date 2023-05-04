@@ -216,31 +216,31 @@ const Room = (props: Props) => {
     };
   }, [showTeamsSection]);
 
-  // useEffect(() => {
-  //   let timeout_music;
-  //   if (roomDetails.id) {
-  //     if (showMusicSection) {
-  //       if (musicRef.current !== undefined) {
-  //         musicRef.current.style.display = "flex";
-  //       }
+  useEffect(() => {
+    let timeout_music;
+    if (roomDetails.id) {
+      if (showMusicSection) {
+        if (musicRef.current !== undefined) {
+          musicRef.current.style.display = "flex";
+        }
 
-  //       timeout_music = setTimeout(() => {
-  //         if (musicRef.current !== undefined) {
-  //           musicRef.current.style.opacity = "100%";
-  //           musicRef.current.style.scale = "100%";
-  //         }
-  //       }, 100);
-  //     } else {
-  //       musicRef.current.style.display = "none";
-  //       musicRef.current.style.opacity = "0%";
-  //       musicRef.current.style.scale = "90%";
-  //     }
-  //   }
+        timeout_music = setTimeout(() => {
+          if (musicRef.current !== undefined) {
+            musicRef.current.style.opacity = "100%";
+            musicRef.current.style.scale = "100%";
+          }
+        }, 100);
+      } else {
+        musicRef.current.style.display = "none";
+        musicRef.current.style.opacity = "0%";
+        musicRef.current.style.scale = "90%";
+      }
+    }
 
-  //   return () => {
-  //     clearTimeout(timeout_music);
-  //   };
-  // }, [showMusicSection]);
+    return () => {
+      clearTimeout(timeout_music);
+    };
+  }, [showMusicSection]);
 
   const addPlayer = () => {
     if (!playerName) {
@@ -591,7 +591,11 @@ const Room = (props: Props) => {
                 )}
               </div>
 
-              <div ref={musicRef} className="hidden w-full max-w-sm">
+              {/* <div ref={musicRef} className="hidden w-full max-w-sm"> */}
+              <div
+                ref={musicRef}
+                className={`transition-all gap-3 w-full  flex-col items-center hidden`}
+              >
                 <MusicSection
                   setModalAction={setModalAction}
                   songs={songs}
