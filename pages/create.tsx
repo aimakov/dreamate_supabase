@@ -13,6 +13,7 @@ type Props = {};
 const Join = (props: Props) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const [roomName, setRoomName] = useState("");
@@ -23,6 +24,7 @@ const Join = (props: Props) => {
 
   const createRoom = async () => {
     try {
+      setLoading(true);
       // if (!roomName) {
       //   dispatch(actionError({ message: "Enter room name." }));
       //   return;
@@ -36,10 +38,12 @@ const Join = (props: Props) => {
       //   console.log(response);
       dispatch(actionSuccess({ message: response.data.message }));
       setTimeout(() => {
+        setLoading(false);
         router.push(`/rooms/${response.data.room_code}`);
       }, 2000);
     } catch (error) {
       console.log(error);
+      setLoading(false);
       dispatch(actionError({ message: error.response.data.message }));
     }
 
@@ -68,11 +72,16 @@ const Join = (props: Props) => {
             <div className="flex flex-col gap-2">
               <button
                 onClick={createRoom}
-                disabled={!roomName}
-                className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all disabled:bg-gray-200 disabled:hover:cursor-not-allowed"
+                disabled={!roomName || loading}
+                className={`w-[130px]  h-[44px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all disabled:bg-gray-200 disabled:hover:cursor-not-allowed`}
               >
-                Create Room
+                {loading ? (
+                  <img src="/loading.gif" className="w-[34px] mx-auto" />
+                ) : (
+                  "Create Room"
+                )}
               </button>
+
               <button
                 onClick={() => router.back()}
                 className="w-[130px] py-[10px] bg-white/30 rounded-3xl hover:bg-white/50 transition-all"
