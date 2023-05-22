@@ -3,36 +3,36 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectMessage, hideModal } from "@/store/modalSlice";
 
 interface Props {
-  confirmAction: Function;
+    confirmAction: Function;
 }
 
 const Modal = ({ confirmAction }: Props) => {
-  const message = useSelector(selectMessage);
+    const message = useSelector(selectMessage);
 
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  function closeModal() {
-    dispatch(hideModal({ message: "" }));
-  }
+    function closeModal() {
+        dispatch(hideModal({ message: "" }));
+    }
 
-  const handleConfirm = () => {
-    confirmAction();
-    closeModal();
-  };
+    const handleConfirm = () => {
+        confirmAction();
+        closeModal();
+    };
 
-  if (message) {
-    return (
-      <div className="fixed top-0 left-0 h-screen w-screen flex justify-center items-center bg-black/50 z-50">
-        <div className="flex flex-col justify-center items-center bg-white rounded-xl p-6 gap-4">
-          <h2>{message}</h2>
-          <div className="flex gap-8">
-            <button onClick={handleConfirm}>Confirm</button>
-            <button onClick={closeModal}>Cancel</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    if (message) {
+        return (
+            <div className="fixed top-0 backdrop-blur-sm left-0 h-screen w-screen flex justify-center items-center bg-black/50 z-50">
+                <div className="flex flex-col justify-center items-center bg-white rounded-xl p-6 gap-4">
+                    <h2>{message}</h2>
+                    <div className="flex gap-8">
+                        <button onClick={handleConfirm}>Confirm</button>
+                        <button onClick={closeModal}>Cancel</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 };
 
 export default Modal;
