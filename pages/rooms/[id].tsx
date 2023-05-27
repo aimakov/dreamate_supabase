@@ -61,13 +61,13 @@ const Room = (props: Props) => {
 
             if (error) throw error;
 
-            if (!user.id) {
+            if (!user?.id) {
                 router.push("/");
                 dispatch(actionError({ message: `You are not signed in.` }));
                 return;
             }
 
-            if (!data.length) {
+            if (!data?.length) {
                 router.push("/");
                 dispatch(actionError({ message: `Room ${room_code} does not exist.` }));
                 return;
@@ -311,12 +311,6 @@ const Room = (props: Props) => {
 
         setShowTeams(true);
     };
-
-    // useEffect(() => {
-    //     if (players?.filter((player) => player.team !== undefined).length) {
-    //         shuffleTeams();
-    //     }
-    // }, [teamsNumber]);
 
     if (!roomDetails?.id) return <Layout> </Layout>;
     else if (!roomDetails.users?.reduce((acc, val) => [...acc, val.user_id], []).includes(user.id) && roomDetails.host !== user.id) router.push("/");
