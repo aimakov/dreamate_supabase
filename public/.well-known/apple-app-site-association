@@ -1,0 +1,23 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "84464MNZD4.com.masoftware.sm-mobile",
+                "paths": [
+                    "/mobile/*"
+                ]
+            }
+        ]
+    },
+    "activitycontinuation": {
+        "apps": [
+            "84464MNZD4.com.masoftware.sm-mobile"
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "84464MNZD4.com.masoftware.sm-mobile"
+        ]
+    }
+}
