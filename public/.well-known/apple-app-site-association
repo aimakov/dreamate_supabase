@@ -3,7 +3,7 @@
         "apps": [],
         "details": [
             {
-                "appID": "84464MNZD4.com.masoftware.sm-mobile",
+                "appID": "84464MNZD4.com.masoftware.sunnimarriage",
                 "paths": [
                     "/mobile/*"
                 ]
@@ -12,12 +12,12 @@
     },
     "activitycontinuation": {
         "apps": [
-            "84464MNZD4.com.masoftware.sm-mobile"
+            "84464MNZD4.com.masoftware.sunnimarriage"
         ]
     },
     "webcredentials": {
         "apps": [
-            "84464MNZD4.com.masoftware.sm-mobile"
+            "84464MNZD4.com.masoftware.sunnimarriage"
         ]
     }
 }
