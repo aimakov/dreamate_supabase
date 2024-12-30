@@ -5,7 +5,7 @@
             {
                 "appID": "84464MNZD4.com.masoftware.sm-mobile",
                 "paths": [
-                    "/mobile/*"
+                    "/verify-profile-linking/*"
                 ]
             }
         ]
