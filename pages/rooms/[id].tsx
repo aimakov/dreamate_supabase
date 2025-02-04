@@ -285,21 +285,7 @@ const Room = (props: Props) => {
         }
     };
 
-    // const getPlayers = async () => {
-    //     const { data, error } = await supabase.from("rooms").select("players").eq("room_code", room_code);
-    //     if (error) {
-    //         dispatch(actionError({ message: error.message }));
-    //         return;
-    //     }
-
-    //     console.log(data);
-    // };
-
-    // useEffect(() => {
-    //     if (players.length) {
-    //         updatePlayersSupabase();
-    //     }
-    // }, [players]);
+   
 
     const shuffleTeams = () => {
         // console.log(generateTeams(teamsNumber, players));

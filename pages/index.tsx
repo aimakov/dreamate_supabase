@@ -1,166 +1,364 @@
-import Layout from "@/components/Layout";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { supabase } from "../utils/supabaseClient";
-import { generateRoomCode } from "@/functions/generateRoomCode";
-import axios from "axios";
+import React, { useEffect, useState, useRef, MouseEventHandler } from "react";
 import { useRouter } from "next/router";
+import Layout from "@/components/Layout";
+import { supabase } from "@/utils/supabaseClient";
+import { useSelector, useDispatch } from "react-redux";
+import { selectUser } from "@/store/authSlice";
+import axios from "axios";
+import { actionError } from "@/store/popupSlice";
+import { skillLevels } from "@/utils/skillLevels";
+import Radio from "@/components/Radio";
 
-import { useDispatch, useSelector } from "react-redux";
-import {
-  selectUser,
-  loginSuccess,
-  logoutSuccess,
-  loginError,
-} from "@/store/authSlice";
-import { actionError, actionSuccess } from "@/store/popupSlice";
-// interface Room {
-//     id: string,
-//     room_code: string,
-//     created_at: Date,
-//     players:
-// }
+import Checkbox from "@/components/Checkbox";
+import { FiX, FiPlusCircle, FiMinusCircle } from "react-icons/fi";
+import { useStateCallback } from "@/hooks/useStateCallback";
+import { generateTeams } from "@/functions/generateTeams";
+import { balanceTeams } from "@/functions/gptGenerateTeams";
 
-export default function Home() {
-  const router = useRouter();
+import { showModal } from "@/store/modalSlice";
+import Modal from "@/components/Modal";
+import { subscribe } from "diagnostics_channel";
+
+import MusicSection from "@/components/MusicSection";
+
+type Props = {};
+
+const Room = (props: Props) => {
   const dispatch = useDispatch();
-
+  const router = useRouter();
+  const { id: room_code } = router.query;
   const user = useSelector(selectUser);
 
-  // const getRooms = async () => {
-  //     try {
-  //         const { data, error } = await supabase.from("rooms").select("room_code");
-  //         if (error) throw error;
+  const [roomDetails, setRoomDetails] = useState<any>({});
 
-  //         if (data.length) return data.reduce((acc: any, val) => [...acc, val.room_code], []);
-  //     } catch (error) {
-  //         console.log(error);
-  //     }
-  // };
+  const [showTeamsSection, setShowTeamsSection] = useState(true);
+  // const [opacityTeamsSection, setOpacityTeamsSection] = useState(false);
+  const [showMusicSection, setShowMusicSection] = useState(false);
 
-  const getURL = () => {
-    let url =
-      process?.env?.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production env.
-      process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
-      "http://localhost:3000/";
-    // Make sure to include `https://` when not localhost.
-    url = url.includes("http") ? url : `https://${url}`;
-    // Make sure to including trailing `/`.
-    url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
-    return url;
-  };
+  const [playerName, setPlayerName] = useState("");
+  const [playerSkill, setPlayerSkill] = useState<null | number>();
+  const [players, setPlayers] = useStateCallback([]);
 
-  const signin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: getURL(),
-      },
-    });
-  };
+  const teamsRef = useRef<HTMLInputElement>();
+  const musicRef = useRef<HTMLInputElement>();
 
-  const signOut = async () => {
-    console.log("signing out");
-    const { error } = await supabase.auth.signOut();
-    dispatch(logoutSuccess({}));
-  };
+  const [loading, setLoading] = useState(false);
+  const [teamsNumber, setTeamsNumber] = useState(2);
 
-  const createRoom = async () => {
+  const [shuffledPlayers, setShuffledPlayers] = useState([]);
+
+  const [showTeams, setShowTeams] = useState(false);
+
+  const [songs, setSongs] = useStateCallback([]);
+
+  const [modalAction, setModalAction] = useState<MouseEventHandler>();
+
+  const leaveRoom = async () => {
     try {
-      console.log(Object.keys(user).length);
-      if (!Object.keys(user).length)
-        dispatch(actionError({ message: "You are not logged in." }));
-      else {
-        const { data: roomCodes_data, error: roomCodes_error } = await supabase
-          .from("rooms")
-          .select("room_code");
-        if (roomCodes_error) throw roomCodes_error;
+      const response = await axios.post("/api/leaveRoom", {
+        room_code: room_code,
+        user_id: user.id,
+      });
 
-        const uniqueRoomCode = generateRoomCode(roomCodes_data);
-
-        console.log(uniqueRoomCode);
-
-        const { error } = await supabase
-          .from("rooms")
-          .insert({ room_code: uniqueRoomCode });
-        if (error) throw error;
-
-        console.log("New room created: " + uniqueRoomCode);
-
-        dispatch(actionSuccess({ message: "Success" }));
-        setTimeout(() => {
-          router.push("rooms/" + uniqueRoomCode);
-        }, 3000);
-      }
+      if (response.data.success) router.push("/");
     } catch (error) {
       console.log(error);
     }
   };
 
-  const testSession = async () => {
-    const response = await axios.post("api/createRoom");
+  const showLeaveRoomModal = () => {
+    dispatch(
+      showModal({
+        message: "Leave room?",
+      })
+    );
 
-    console.log(response);
+    setModalAction(() => leaveRoom);
+  };
+
+  const closeRoom = async () => {
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("room_code", room_code);
+      if (error) throw error;
+
+      router.push("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const showDeletePlayerModal = (name: string) => {
+    dispatch(
+      showModal({
+        message: `Delete ${name}?`,
+      })
+    );
+
+    setModalAction(() => () => deletePlayer(name));
+  };
+
+  useEffect(() => {
+    let timeout;
+
+    if (showTeamsSection) {
+      if (teamsRef.current !== undefined) {
+        teamsRef.current.style.display = "flex";
+      }
+
+      timeout = setTimeout(() => {
+        if (teamsRef.current !== undefined) {
+          teamsRef.current.style.opacity = "100%";
+          teamsRef.current.style.scale = "100%";
+        }
+      }, 100);
+    } else {
+      teamsRef.current.style.display = "none";
+      teamsRef.current.style.opacity = "0%";
+      teamsRef.current.style.scale = "90%";
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [showTeamsSection]);
+
+  useEffect(() => {
+    let timeout_music;
+    if (roomDetails.id) {
+      if (showMusicSection) {
+        if (musicRef.current !== undefined) {
+          musicRef.current.style.display = "flex";
+        }
+
+        timeout_music = setTimeout(() => {
+          if (musicRef.current !== undefined) {
+            musicRef.current.style.opacity = "100%";
+            musicRef.current.style.scale = "100%";
+          }
+        }, 100);
+      } else {
+        musicRef.current.style.display = "none";
+        musicRef.current.style.opacity = "0%";
+        musicRef.current.style.scale = "90%";
+      }
+    }
+
+    return () => {
+      clearTimeout(timeout_music);
+    };
+  }, [showMusicSection]);
+
+  const addPlayer = () => {
+    if (!playerName) {
+      dispatch(actionError({ message: "Enter player's name." }));
+      return;
+    }
+
+    if (!playerSkill) {
+      dispatch(actionError({ message: "Enter player's skill." }));
+      return;
+    }
+
+    if (players?.length) {
+      if (players.reduce((acc, val) => [...acc, val.name.toUpperCase()], []).includes(playerName.toUpperCase())) {
+        dispatch(actionError({ message: "Such user already exists." }));
+        setPlayerName("");
+        setPlayerSkill(null);
+        return;
+      }
+      setPlayers((prevstate: any) => [...prevstate, { name: playerName, skill: playerSkill }]);
+    } else {
+      setPlayers([{ name: playerName, skill: playerSkill }]);
+    }
+
+    setPlayerName("");
+    setPlayerSkill(null);
+  };
+
+  const deletePlayer = (name: string) => {
+    setPlayers(players.filter((player) => player.name !== name));
+  };
+
+  const shuffleTeams = () => {
+    // console.log(generateTeams(teamsNumber, players));
+    // setShuffledPlayers(generateTeams(teamsNumber, players));
+    setPlayers(generateTeams(teamsNumber, players).sort(() => Math.random() - 0.5));
+
+    setShowTeams(true);
   };
 
   return (
     <Layout>
-      <div className="w-full h-full min-h-screen relative flex flex-col justify-center items-center max-w-sm mx-auto gap-6">
-        {user.id && (
-          <h2 className=" text-lg">
-            Hello, <b>{user.user_metadata.full_name}</b>
-          </h2>
-        )}
-        <img src={"/Logo.png"} alt="logo" className="w-3/4" />
+      <>
+        <Modal confirmAction={modalAction} />
+        <div className="w-full py-10 flex-1 max-w-sm mx-auto h-full flex flex-col  items-center font-comfortaa gap-4 transition-all">
+          <div className="flex w-full flex-col gap-4 items-center justify-center">
+            {/* <h2 className="text-xl text-[24px]">
+              Room Code: <span className="font-bold">{room_code}</span>
+            </h2> */}
 
-        <div className="flex flex-col mt-10 gap-3">
-          <button
-            onClick={() => router.push("/create")}
-            disabled={!user.id}
-            className="disabled:bg-gray-300 disabled:hover:cursor-not-allowed py-4 w-[150px] bg-white/40 shadow-md rounded-2xl"
-          >
-            Create room
-          </button>
+            {/* <div className=" w-[200px] flex gap-4 max-w-xs justify-between">
+              <Checkbox value={showTeamsSection} name={"Teams"} onChange={() => setShowTeamsSection((prevstate) => !prevstate)} />
+              <Checkbox value={showMusicSection} name={"Music"} onChange={() => setShowMusicSection((prevstate) => !prevstate)} />
+            </div> */}
 
-          <button
-            disabled={!user.id}
-            onClick={() => router.push("/join")}
-            className="disabled:bg-gray-300 disabled:hover:cursor-not-allowed py-4 mb-10 w-[150px] bg-white/40 shadow-md rounded-2xl"
-          >
-            Join room
-          </button>
+            <div ref={teamsRef} className={`transition-all gap-3 w-full  flex-col items-center hidden`}>
+              <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                <input
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="Player's name"
+                  className="w-full rounded-md py-[5px] px-3 placeholder:text-sm placeholder:text-gray-500 text-sm "
+                />
+                <div className="my-3 grid grid-cols-2 w-full px-2 gap-y-2">
+                  {skillLevels.map((skillLevel) => (
+                    <Radio
+                      key={skillLevel.id}
+                      setPlayerSkill={setPlayerSkill}
+                      name={skillLevel.id}
+                      value={skillLevel.value}
+                      checked={playerSkill === skillLevel.value}
+                    />
+                  ))}
+                </div>
 
-          <button
-            onClick={() => router.push("/rooms")}
-            disabled={!user?.id}
-            className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl disabled:bg-gray-300 disabled:cursor-not-allowed"
-          >
-            Your rooms
-          </button>
+                <button onClick={addPlayer} className="bg-white w-[100px] text-center h-[32px] rounded-full text-sm">
+                  Add Player
+                </button>
+              </div>
 
-          {Object.keys(user).length ? (
-            <button
-              onClick={signOut}
-              className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl"
-            >
-              Sign out
-            </button>
-          ) : (
-            <button
-              onClick={signin}
-              className="py-4 w-[150px] bg-white/40 shadow-md rounded-2xl"
-            >
-              Sign in
-            </button>
-          )}
+              <div className="w-11/12 rounded-xl bg-white/30  flex items-center py-2 px-3 gap-2 justify-around select-none">
+                <div className="flex flex-col text-sm gap-1">
+                  <div>Teams #</div>
+                  <div className="flex items-center justify-around">
+                    <FiMinusCircle
+                      className=" hover:cursor-pointer"
+                      onClick={() => {
+                        if (!players?.length) return;
+                        setTeamsNumber((prevstate) => (prevstate > 2 ? prevstate - 1 : prevstate));
+                      }}
+                    />
+
+                    <span>{teamsNumber}</span>
+
+                    <FiPlusCircle
+                      className=" hover:cursor-pointer"
+                      onClick={() => {
+                        if (!players?.length) return;
+                        setTeamsNumber((prevstate) => (prevstate > players?.length - 1 ? prevstate : prevstate + 1));
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={shuffleTeams}
+                  disabled={!players?.length}
+                  className="w-2/6 bg-white rounded-xl self-stretch text-sm disabled:bg-gray-300 disabled:hover:cursor-not-allowed"
+                >
+                  Shuffle
+                </button>
+
+                <div className="flex flex-col items-center justify-center text-sm gap-1">
+                  <p>Players #</p>
+                  {players?.length ?? 0}
+                </div>
+              </div>
+              {showTeams ? (
+                <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                  {/* <div className="w-full grid grid-cols-2 gap-y-6 text-center"> */}
+                  <div className="w-full flex flex-wrap justify-center gap-y-6 text-center">
+                    {[...new Array(teamsNumber)].map((el, i) => (
+                      <div key={i} className="flex flex-col gap-1 w-2/4">
+                        <h2>Team #{i + 1}</h2>
+                        <div>
+                          {players
+                            .filter((player: any) => player.team === i + 1)
+                            .map((player: any) => (
+                              <div key={player.name} className="text-[13px]">
+                                {player.name}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {players.filter((player) => player.team === undefined || player.team > teamsNumber).length > 0 ? (
+                    <div className="w-full flex flex-col gap-2">
+                      <h2 className="text-center">Unshuffled players: </h2>
+                      {players.map((player) => {
+                        if (player.team === undefined || player.team > teamsNumber)
+                          return (
+                            <div
+                              key={player.name}
+                              className={`text-sm w-full flex ${user?.id === roomDetails.host ? "justify-between" : "justify-center"} px-4`}
+                            >
+                              <p>{player.name}</p>{" "}
+                              {user?.id === roomDetails.host && (
+                                <div className="flex gap-2 items-center">
+                                  <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
+                                  <FiX
+                                    className=" hover:cursor-pointer"
+                                    onClick={() => showDeletePlayerModal(player.name)}
+                                    // onClick={() => deletePlayer(player.name)}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                      })}
+                    </div>
+                  ) : null}
+                  <button onClick={() => setShowTeams(false)} className="bg-white px-2 py-2 rounded-xl text-sm mt-2">
+                    Show players
+                  </button>
+                </div>
+              ) : (
+                <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                  {players?.length > 0 ? (
+                    <>
+                      <div className="w-full flex flex-col gap-2">
+                        {players.map((player) => (
+                          <div
+                            key={player.name}
+                            className={`text-sm w-full flex ${user?.id === roomDetails.host ? "justify-between" : "justify-center"} x px-4`}
+                          >
+                            <p>{player.name}</p>{" "}
+                            <div className="flex gap-2 items-center">
+                              <p className="text-xs">{skillLevels.reduce((acc, val) => [...acc, val.id], [])[player.skill - 1]}</p>
+                              <FiX
+                                className=" hover:cursor-pointer"
+                                //   onClick={() => deletePlayer(player.name)}
+
+                                onClick={() => showDeletePlayerModal(player.name)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {players.filter((player) => player.team !== undefined).length > 0 && (
+                        <button onClick={() => setShowTeams(true)} className="bg-white px-2 py-2 rounded-xl text-sm mt-2">
+                          Show teams
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <p className=" text-sm">No players in the room.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* <div ref={musicRef} className="hidden w-full max-w-sm"> */}
+            {/* <div ref={musicRef} className={`transition-all gap-3 w-full  flex-col items-center hidden`}>
+              <MusicSection setModalAction={setModalAction} songs={songs} setSongs={setSongs} room_code={`${room_code}`} user={user} host={roomDetails?.host} />
+            </div> */}
+          </div>
         </div>
-        <Link
-          href={"privacy_policy"}
-          className="absolute bottom-4 left-2/4 -translate-x-1/2 text-xs"
-        >
-          Privacy Policy
-        </Link>
-      </div>
+      </>
     </Layout>
   );
-}
+};
+
+export default Room;
