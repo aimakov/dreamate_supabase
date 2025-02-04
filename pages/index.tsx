@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, MouseEventHandler } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
-import { supabase } from "@/utils/supabaseClient";
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "@/store/authSlice";
 import axios from "axios";
@@ -17,9 +16,6 @@ import { balanceTeams } from "@/functions/gptGenerateTeams";
 
 import { showModal } from "@/store/modalSlice";
 import Modal from "@/components/Modal";
-import { subscribe } from "diagnostics_channel";
-
-import MusicSection from "@/components/MusicSection";
 
 type Props = {};
 
@@ -74,17 +70,6 @@ const Room = (props: Props) => {
     );
 
     setModalAction(() => leaveRoom);
-  };
-
-  const closeRoom = async () => {
-    try {
-      const { error } = await supabase.from("rooms").delete().eq("room_code", room_code);
-      if (error) throw error;
-
-      router.push("/");
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const showDeletePlayerModal = (name: string) => {

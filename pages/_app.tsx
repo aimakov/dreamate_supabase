@@ -2,12 +2,11 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
 import store from "../store/store";
-import { supabase } from "@/utils/supabaseClient";
 
 export default function App({ Component, pageProps }: AppProps) {
-    return (
-        <Provider store={store}>
-            <Component {...pageProps} />
-        </Provider>
-    );
+  return (
+    <Provider store={store}>
+      <Component {...pageProps} />
+    </Provider>
+  );
 }
