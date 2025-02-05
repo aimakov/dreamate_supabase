@@ -187,8 +187,8 @@ const Room = (props: Props) => {
               <Checkbox value={showMusicSection} name={"Music"} onChange={() => setShowMusicSection((prevstate) => !prevstate)} />
             </div> */}
 
-            <div ref={teamsRef} className={`transition-all gap-3 w-full  flex-col items-center hidden`}>
-              <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+            <div ref={teamsRef} className={`transition-all gap-[3px] w-full  flex-col items-center hidden`}>
+              <div className="w-11/12 rounded-t-2xl rounded-b-md bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
                 <input
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
@@ -212,7 +212,7 @@ const Room = (props: Props) => {
                 </button>
               </div>
 
-              <div className="w-11/12 rounded-xl bg-white/30  flex items-center py-2 px-3 gap-2 justify-around select-none">
+              <div className="w-11/12 rounded-md bg-white/30  flex items-center py-2 px-3 gap-2 justify-around select-none">
                 <div className="flex flex-col text-sm gap-1">
                   <div>Teams #</div>
                   <div className="flex items-center justify-around">
@@ -250,7 +250,7 @@ const Room = (props: Props) => {
                 </div>
               </div>
               {showTeams ? (
-                <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                <div className="w-11/12 rounded-t-md rounded-b-2xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
                   {/* <div className="w-full grid grid-cols-2 gap-y-6 text-center"> */}
                   <div className="w-full flex flex-wrap justify-center gap-y-6 text-center">
                     {[...new Array(teamsNumber)].map((el, i) => (
@@ -299,7 +299,7 @@ const Room = (props: Props) => {
                   </button>
                 </div>
               ) : (
-                <div className="w-11/12 rounded-xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
+                <div className="w-11/12 rounded-t-md rounded-b-2xl bg-white/30  flex flex-col items-center py-3 px-3 gap-2">
                   {players?.length > 0 ? (
                     <>
                       <div className="w-full flex flex-col gap-2">
